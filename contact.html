@@ -7,6 +7,7 @@
   <meta name="description" content="How to contact Axion STEM Tutors.">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to main content</a>
@@ -19,7 +20,7 @@
   <main id="main">
     <div class="page-head"><div class="wrap"><h1>Contact us</h1><p>Questions, privacy requests, or safety concerns.</p></div></div>
     <section><div class="wrap"><div class="prose">
-<div class="callout">Our contact form opens soon. This page will list how to reach us.</div>
+<div class="callout">Use the form below to reach us.</div>
 <h2>What you can ask us</h2>
 <ul><li>Questions about sessions, subjects, or signing up</li>
 <li>Teen tutor and volunteer questions</li>
@@ -27,7 +28,19 @@
 <li>Safety concerns about a session or a tutor</li></ul>
 <h2>If someone is in danger</h2>
 <p>If a child is in immediate danger, call 911. Do not wait for us to reply.</p>
-</div></div></section>
+</div><div class="form" id="message">
+    <h2>Send us a message</h2><p class="sub">We reply as soon as we can.</p>
+    <form action="https://formsubmit.co/axionstemtutors@gmail.com" method="POST">
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_subject" value="New CONTACT form">
+      <input type="hidden" name="_next" value="https://axionstemtutors.github.io/thanks.html">
+      <label for="name">Your name</label><input type="text" id="name" name="name" required ><label for="email">Your email</label><input type="email" id="email" name="email" required ><label for="topic">Topic</label><select id="topic" name="Topic" required><option value="">Choose one</option><option>General question</option><option>Parent question</option><option>Tutor question</option><option>Privacy request</option><option>Safety concern</option></select><label for="message">Message</label><textarea id="message" name="Message" required maxlength="2000"></textarea><p class="note">Please do not include a child's full name or other personal details about a child.</p>
+      <label class="check"><input type="checkbox" name="Agreed to be contacted" value="Yes" required> I agree to be contacted by Axion STEM Tutors about this message.</label>
+      <button type="submit">Send message</button>
+    </form>
+    <p class="note">We use what you share only to reply to you and plan our program. We never sell it or use it for ads. Your message is delivered to us by FormSubmit, a third-party form service. Please do not include anything about a child beyond what this form asks for.</p>
+  </div></div></section>
   </main>
   <footer class="site">
     <div class="wrap">

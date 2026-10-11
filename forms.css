@@ -1,0 +1,14 @@
+.form{max-width:44rem;margin-top:2.5rem;background:var(--surface);border:2px solid var(--line);border-top:10px solid var(--cs);border-radius:.5rem;padding:1.5rem}
+.form h2{margin:0 0 .25rem}
+.form .sub{margin:0 0 1rem;color:var(--muted)}
+.form label{display:block;font-weight:600;margin:1rem 0 .3rem;color:var(--text)}
+.form input[type=text],.form input[type=email],.form select,.form textarea{width:100%;padding:.7rem .8rem;background:var(--bg);color:var(--text);border:2px solid var(--line);border-radius:.4rem;font:inherit}
+.form input:focus,.form select:focus,.form textarea:focus{border-color:var(--cs);outline:2px solid var(--cs);outline-offset:1px}
+.form textarea{min-height:8rem;resize:vertical}
+.form fieldset{border:2px solid var(--line);border-radius:.5rem;padding:.5rem 1rem 1rem;margin:1.25rem 0 0}
+.form legend{font-weight:700;padding:0 .4rem}
+.form .check{display:flex;gap:.6rem;align-items:flex-start;margin:.5rem 0;font-weight:400}
+.form .check input{margin-top:.3rem;width:1.15rem;height:1.15rem;accent-color:var(--cs);flex:none}
+.form button{background:var(--cs);color:#141a33;border:0;border-radius:.4rem;padding:.8rem 1.5rem;font:inherit;font-weight:800;cursor:pointer;margin-top:1.25rem}
+.form button:hover{filter:brightness(1.08)}
+.form .note{font-size:.92rem;color:var(--muted);margin:1rem 0 0}
