@@ -92,3 +92,17 @@ nav a[aria-current="page"]{border-color:var(--cs)}
 .topics div{background:var(--bg);border:2px solid var(--line);border-radius:.5rem;padding:1rem}
 .topics h4{margin:0 0 .4rem;font-size:1rem}
 .topics ul{margin:0;padding-left:1.1rem;color:var(--muted)}
+
+/* Batch 2 */
+.foot-links{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;margin:.75rem 0 0;padding:0;list-style:none}
+details{background:var(--surface);border:2px solid var(--line);border-radius:.5rem;margin:.75rem 0;max-width:44rem}
+summary{cursor:pointer;font-weight:700;padding:.9rem 1.1rem;color:var(--text)}
+details[open] summary{border-bottom:2px solid var(--line)}
+details p{margin:0;padding:.9rem 1.1rem;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.25rem;margin-bottom:2rem}
+.stat{background:var(--surface);border:2px solid var(--line);border-top-width:10px;border-radius:.5rem;padding:1.25rem}
+.stat .num{font-size:2.4rem;font-weight:800;line-height:1.1;margin:0}
+.stat .label{margin:.25rem 0 0;color:var(--muted)}
+.stat.math{border-top-color:var(--math)}
+.stat.science{border-top-color:var(--science)}
+.stat.cs{border-top-color:var(--cs)}
