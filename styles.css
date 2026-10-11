@@ -63,3 +63,32 @@ footer.site strong{color:var(--text)}
   section{padding:2.5rem 0}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Inner pages */
+nav a[aria-current="page"]{border-color:var(--cs)}
+.page-head{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;border-bottom:2px solid var(--line);padding:3rem 0}
+.page-head h1{font-size:clamp(2rem,4.5vw,3rem);line-height:1.1;letter-spacing:-.02em;margin:0 0 .6rem;font-weight:800}
+.page-head p{font-size:1.2rem;color:var(--muted);max-width:40rem;margin:0}
+.prose{max-width:44rem}
+.prose h2{margin-top:2.25rem}
+.prose h2:first-child{margin-top:0}
+.prose ul{padding-left:1.25rem}
+.prose li{margin:.35rem 0}
+.prose p,.prose li{color:var(--muted)}
+.prose strong{color:var(--text)}
+.callout{background:var(--surface);border:2px solid var(--cs);border-radius:.5rem;padding:1rem 1.25rem;margin:1.5rem 0;color:var(--text)}
+.group-title{margin:2.5rem 0 1rem;font-size:1.3rem}
+.group-title:first-of-type{margin-top:0}
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.25rem}
+.card{background:var(--surface);border:2px solid var(--line);border-top-width:10px;border-radius:.5rem;padding:1.25rem}
+.card.math{border-top-color:var(--math)}
+.card.science{border-top-color:var(--science)}
+.card.cs{border-top-color:var(--cs)}
+.card.lead{border-top-color:var(--text)}
+.card .role{margin:0 0 .15rem;font-size:1.15rem;font-weight:800}
+.card .person{margin:0 0 .6rem;font-weight:600;color:var(--cs)}
+.card p.job{margin:0;color:var(--muted)}
+.topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem;margin-top:1rem}
+.topics div{background:var(--bg);border:2px solid var(--line);border-radius:.5rem;padding:1rem}
+.topics h4{margin:0 0 .4rem;font-size:1rem}
+.topics ul{margin:0;padding-left:1.1rem;color:var(--muted)}
