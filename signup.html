@@ -69,6 +69,8 @@ f.addEventListener('submit',async(e)=>{e.preventDefault();show('');
  const v=Object.fromEntries(new FormData(f));
  if(v.password!==v.password2){show('The passwords do not match.');return;}
  if(v.password.length<10){show('Use a password of at least 10 characters.');return;}
+ const norm=s=>s.trim().toLowerCase().replace(/\+[^@]*@/,'@');
+ if(v.role==='tutor'&&norm(v.email)===norm(v.guardian_email)){show('The parent or guardian email must be different from your own email.');return;}
  const meta={full_name:v.full_name.trim(),role:v.role};
  if(v.role==='tutor'){meta.grade=Number(v.grade);
   meta.subjects=[...f.querySelectorAll('input[name=subj]:checked')].map(x=>x.value);
