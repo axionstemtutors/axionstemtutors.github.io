@@ -78,7 +78,11 @@ f.addEventListener('submit',async(e)=>{e.preventDefault();show('');
  btn.disabled=true;
  const {error}=await sb.auth.signUp({email:v.email.trim(),password:v.password,options:{data:meta,emailRedirectTo:location.origin+'/login.html'}});
  btn.disabled=false;
- if(error){show('We could not create your account: '+error.message);return;}
+ if(error){const m=error.message||'';
+  if(/database error/i.test(m)){show('We could not create your account. Please check that every field is filled in, and that the parent or guardian email is different from your own.');}
+  else if(/already registered|already been registered/i.test(m)){show('An account with that email already exists. Try logging in instead.');}
+  else{show('We could not create your account: '+m);}
+  return;}
  f.hidden=true;show('Almost done. We sent a confirmation link to your email. Open it, then log in.');
 });
 
