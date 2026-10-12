@@ -12,3 +12,10 @@
 .form button{background:var(--cs);color:#141a33;border:0;border-radius:.4rem;padding:.8rem 1.5rem;font:inherit;font-weight:800;cursor:pointer;margin-top:1.25rem}
 .form button:hover{filter:brightness(1.08)}
 .form .note{font-size:.92rem;color:var(--muted);margin:1rem 0 0}
+.form input[type=password],.form input[type=number]{width:100%;padding:.7rem .8rem;background:var(--bg);color:var(--text);border:2px solid var(--line);border-radius:.4rem;font:inherit}
+.form input[type=password]:focus{border-color:var(--cs);outline:2px solid var(--cs);outline-offset:1px}
+.form .msg{margin-top:1rem;padding:.8rem 1rem;border:2px solid var(--cs);border-radius:.4rem}
+.form .msg:empty{display:none}
+.form .linkbtn{background:none;border:0;color:var(--link);padding:0;margin:1rem 0 0;font-weight:600;text-decoration:underline}
+.form [hidden]{display:none}
+.form .pair{display:flex;gap:1.5rem;flex-wrap:wrap}

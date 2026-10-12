@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in | Axion STEM Tutors</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="subjects.html">Subjects</a></li><li><a href="parents.html">For parents</a></li><li><a href="tutors.html">For tutors</a></li><li><a href="about.html">About</a></li><li><a href="leadership.html">Leadership</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>Log in</h1><p>Welcome back.</p></div></div>
+    <section><div class="wrap"><div class="form" style="margin-top:0">
+<h2>Log in</h2>
+<form id="f">
+<label for="email">Email</label><input type="email" id="email" name="email" required autocomplete="email">
+<label for="password">Password</label><input type="password" id="password" name="password" required autocomplete="current-password">
+<button type="submit" id="btn">Log in</button>
+<div><button type="button" class="linkbtn" id="reset">Forgot your password?</button></div>
+<div class="msg" id="out" role="status" aria-live="polite"></div>
+</form>
+<p class="note">New here? <a href="signup.html">Create an account</a>.</p></div></div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>Axion STEM Tutors</strong> is a free tutoring service for grades 2-6.</p>
+      <p>This site does not collect any information from children.</p>
+      <ul class="foot-links"><li><a href="impact.html">Impact</a></li><li><a href="support.html">Support us</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="policies.html">Policies</a></li></ul>
+    </div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const out=document.getElementById('out');
+const show=(m)=>{out.textContent=m};
+sb.auth.getSession().then(({data})=>{if(data.session)location.href='account.html';});
+const f=document.getElementById('f'),btn=document.getElementById('btn');
+f.addEventListener('submit',async(e)=>{e.preventDefault();show('');btn.disabled=true;
+ const {error}=await sb.auth.signInWithPassword({email:f.email.value.trim(),password:f.password.value});
+ btn.disabled=false;
+ if(error){show('That email and password did not match, or the email is not confirmed yet.');return;}
+ location.href='account.html';});
+document.getElementById('reset').addEventListener('click',async()=>{
+ const em=f.email.value.trim();if(!em){show('Enter your email above first.');return;}
+ await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+'/account.html'});
+ show('If an account exists for that email, we sent a link to reset the password.');});
+
+</script>
+</body>
+</html>

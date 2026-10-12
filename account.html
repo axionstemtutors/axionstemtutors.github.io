@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My account | Axion STEM Tutors</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="subjects.html">Subjects</a></li><li><a href="parents.html">For parents</a></li><li><a href="tutors.html">For tutors</a></li><li><a href="about.html">About</a></li><li><a href="leadership.html">Leadership</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>My account</h1><p>Your details and settings.</p></div></div>
+    <section><div class="wrap"><div class="form" style="margin-top:0">
+<h2 id="hello">Loading...</h2>
+<dl id="info"></dl>
+<p class="note" id="status"></p>
+<h3>Change password</h3>
+<form id="pw"><label for="np">New password (at least 10 characters)</label><input type="password" id="np" required minlength="10" autocomplete="new-password">
+<button type="submit">Update password</button></form>
+<div class="msg" id="out" role="status" aria-live="polite"></div>
+<button type="button" class="linkbtn" id="signout">Log out</button></div></div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>Axion STEM Tutors</strong> is a free tutoring service for grades 2-6.</p>
+      <p>This site does not collect any information from children.</p>
+      <ul class="foot-links"><li><a href="impact.html">Impact</a></li><li><a href="support.html">Support us</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="policies.html">Policies</a></li></ul>
+    </div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const out=document.getElementById('out');
+const show=(m)=>{out.textContent=m};
+const add=(k,v)=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;document.getElementById('info').append(dt,dd);};
+async function load(){
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session){location.href='login.html';return;}
+ const {data:p}=await sb.from('profiles').select('role,full_name').eq('id',session.user.id).single();
+ document.getElementById('hello').textContent='Hello'+(p&&p.full_name?', '+p.full_name:'');
+ add('Email',session.user.email);add('Account type',p?p.role:'unknown');
+ if(p&&p.role==='tutor'){const {data:t}=await sb.from('tutor_profiles').select('grade,subjects,status').eq('id',session.user.id).single();
+  if(t){add('Grade',String(t.grade));add('Subjects',(t.subjects||[]).join(', ')||'None chosen');add('Application status',t.status);
+   document.getElementById('status').textContent=t.status==='pending'?'Your application is pending. We will contact your parent or guardian for consent before you can tutor.':'';}}
+ if(p&&p.role==='parent')document.getElementById('status').textContent='Next, we will add the consent step so you can add your child and book sessions.';
+}
+load();
+document.getElementById('pw').addEventListener('submit',async(e)=>{e.preventDefault();
+ const {error}=await sb.auth.updateUser({password:document.getElementById('np').value});
+ show(error?'Could not update the password: '+error.message:'Your password was updated.');});
+document.getElementById('signout').addEventListener('click',async()=>{await sb.auth.signOut();location.href='login.html';});
+
+</script>
+</body>
+</html>

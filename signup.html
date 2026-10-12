@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create an account | Axion STEM Tutors</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="subjects.html">Subjects</a></li><li><a href="parents.html">For parents</a></li><li><a href="tutors.html">For tutors</a></li><li><a href="about.html">About</a></li><li><a href="leadership.html">Leadership</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>Create an account</h1><p>Parents and high school tutors, start here.</p></div></div>
+    <section><div class="wrap"><div class="form" style="margin-top:0">
+<h2>Sign up</h2><p class="sub">Creating an account does not collect any information about children. Parents add child details only after giving consent.</p>
+<form id="f">
+<fieldset><legend>I am a</legend>
+<label class="check"><input type="radio" name="role" value="parent" checked> Parent or guardian</label>
+<label class="check"><input type="radio" name="role" value="tutor"> High school tutor (grades 9-12)</label></fieldset>
+<label for="full_name">Your first and last name</label><input type="text" id="full_name" name="full_name" required maxlength="100" autocomplete="name">
+<label for="email">Email</label><input type="email" id="email" name="email" required autocomplete="email">
+<label for="password">Password (at least 10 characters)</label><input type="password" id="password" name="password" required minlength="10" autocomplete="new-password">
+<label for="password2">Confirm password</label><input type="password" id="password2" name="password2" required minlength="10" autocomplete="new-password">
+<fieldset id="parentbox"><legend>Parent or guardian</legend>
+<label class="check"><input type="checkbox" id="adult"> I am a parent or legal guardian, and I am at least 18 years old.</label></fieldset>
+<fieldset id="tutorbox" hidden><legend>Tutor details</legend>
+<label for="grade">Your current grade</label><select id="grade" name="grade"><option value="">Choose one</option><option>9</option><option>10</option><option>11</option><option>12</option></select>
+<p class="note">Subjects you could tutor</p>
+<label class="check"><input type="checkbox" name="subj" value="Math"> Math</label>
+<label class="check"><input type="checkbox" name="subj" value="Science"> Science</label>
+<label class="check"><input type="checkbox" name="subj" value="Computer Science"> Computer science</label>
+<label for="guardian_name">Parent or guardian name</label><input type="text" id="guardian_name" name="guardian_name" maxlength="100">
+<label for="guardian_email">Parent or guardian email</label><input type="email" id="guardian_email" name="guardian_email">
+<label class="check"><input type="checkbox" id="knows"> My parent or guardian knows I am signing up. My account stays pending until they give consent and Axion approves me.</label></fieldset>
+<button type="submit" id="btn">Create account</button>
+
+</form>
+<div class="msg" id="out" role="status" aria-live="polite"></div>
+<p class="note">Already have an account? <a href="login.html">Log in</a>. <a href="privacy.html">Read our privacy policy</a>.</p></div></div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>Axion STEM Tutors</strong> is a free tutoring service for grades 2-6.</p>
+      <p>This site does not collect any information from children.</p>
+      <ul class="foot-links"><li><a href="impact.html">Impact</a></li><li><a href="support.html">Support us</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="policies.html">Policies</a></li></ul>
+    </div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const out=document.getElementById('out');
+const show=(m)=>{out.textContent=m};
+const f=document.getElementById('f'),btn=document.getElementById('btn');
+function sync(){const t=f.elements.role.value==='tutor';
+ document.getElementById('tutorbox').hidden=!t;document.getElementById('parentbox').hidden=t;
+ ['grade','guardian_name','guardian_email','knows'].forEach(i=>document.getElementById(i).required=t);
+ document.getElementById('adult').required=!t;}
+f.addEventListener('change',sync);sync();
+f.addEventListener('submit',async(e)=>{e.preventDefault();show('');
+ const v=Object.fromEntries(new FormData(f));
+ if(v.password!==v.password2){show('The passwords do not match.');return;}
+ if(v.password.length<10){show('Use a password of at least 10 characters.');return;}
+ const meta={full_name:v.full_name.trim(),role:v.role};
+ if(v.role==='tutor'){meta.grade=Number(v.grade);
+  meta.subjects=[...f.querySelectorAll('input[name=subj]:checked')].map(x=>x.value);
+  meta.guardian_name=v.guardian_name.trim();meta.guardian_email=v.guardian_email.trim();}
+ btn.disabled=true;
+ const {error}=await sb.auth.signUp({email:v.email.trim(),password:v.password,options:{data:meta,emailRedirectTo:location.origin+'/login.html'}});
+ btn.disabled=false;
+ if(error){show('We could not create your account: '+error.message);return;}
+ f.hidden=true;show('Almost done. We sent a confirmation link to your email. Open it, then log in.');
+});
+
+</script>
+</body>
+</html>
