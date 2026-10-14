@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Axion STEM Tutors</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+  <style>
+    .tbl{overflow-x:auto;margin-top:1rem}
+    .tbl table{border-collapse:collapse;width:100%;min-width:760px}
+    .tbl th,.tbl td{border-bottom:1px solid rgba(255,255,255,.2);padding:.5rem .6rem;text-align:left;vertical-align:top}
+    .tbl button{margin:.15rem .25rem .15rem 0;padding:.35rem .6rem;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="account.html">Account</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>Admin: parents</h1><p>Consents and video-call checks.</p></div></div>
+    <section><div class="wrap">
+      <div class="form" style="margin-top:0" id="denied" hidden>
+        <h2>Admins only</h2>
+        <p>This page is only for Axion admins. <a href="login.html">Log in</a> or <a href="account.html">go to your account</a>.</p>
+      </div>
+      <div id="area" hidden>
+        <p id="info"></p>
+        <p class="note">Parent email addresses are in Supabase under Authentication, then Users. Only mark someone verified after you have actually spoken with them on a video call.</p>
+        <div class="msg" id="out" role="status" aria-live="polite"></div>
+        <div class="tbl"><table>
+          <thead><tr><th>Parent</th><th>Required consents</th><th>Optional</th><th>Phone and best times</th><th>Video call</th><th>Actions</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table></div>
+      </div>
+    </div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>Axion STEM Tutors</strong> admin area.</p>
+    </div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const $=(id)=>document.getElementById(id);
+const REQUIRED=['data_collection','video_audio','recording','tutor_volunteers','service_providers'];
+let version=null;
+
+function cell(tr,text){const td=document.createElement('td');td.textContent=text;tr.appendChild(td);return td;}
+function yn(v){return v===true?'yes':(v===false?'no':'not answered');}
+
+async function setStatus(id,status,askNote){
+  let note=null;
+  if(askNote){note=window.prompt('Optional note (for example, "video call on Oct 20"). Press Cancel to stop.','');if(note===null)return;}
+  const r=await sb.rpc('admin_set_parent_verification',{p_parent:id,p_status:status,p_note:note});
+  $('out').textContent=r.error?'That did not work: '+r.error.message:'Saved.';
+  await render();
+}
+
+async function render(){
+  const [pr,cs,vr]=await Promise.all([
+    sb.from('profiles').select('id,full_name').eq('role','parent').order('full_name'),
+    sb.from('consents').select('parent_id,consent_type,granted,created_at').eq('form_version',version).order('created_at',{ascending:false}),
+    sb.from('parent_verifications').select('*')
+  ]);
+  if(pr.error||cs.error||vr.error){$('out').textContent='Could not load the data.';return;}
+  const latest={};
+  (cs.data||[]).forEach(r=>{const m=latest[r.parent_id]||(latest[r.parent_id]={});if(!(r.consent_type in m))m[r.consent_type]=r.granted;});
+  const vmap={};(vr.data||[]).forEach(v=>{vmap[v.parent_id]=v;});
+  const body=$('rows');body.textContent='';
+  let ready=0;
+  (pr.data||[]).forEach(p=>{
+    const m=latest[p.id]||{};
+    const n=REQUIRED.filter(k=>m[k]===true).length;
+    const v=vmap[p.id];
+    if(n===REQUIRED.length&&v&&v.status==='verified')ready++;
+    const tr=document.createElement('tr');
+    cell(tr,(p.full_name||'(no name)')+' ('+p.id.slice(0,8)+')');
+    cell(tr,n+' of '+REQUIRED.length);
+    cell(tr,'2-on-1: '+yn(m.pairing_2on1)+'; public first name: '+yn(m.public_first_name));
+    cell(tr,v?(v.phone+(v.best_times?' | '+v.best_times:'')):'none yet');
+    cell(tr,v?(v.status+(v.admin_note?' | '+v.admin_note:'')):'not requested');
+    const td=document.createElement('td');
+    if(v){
+      [['Mark verified','verified',true],['Needs attention','rejected',true],['Reset','requested',false]].forEach(a=>{
+        const b=document.createElement('button');b.type='button';b.textContent=a[0];
+        b.addEventListener('click',()=>setStatus(p.id,a[1],a[2]));td.appendChild(b);
+      });
+    }
+    tr.appendChild(td);body.appendChild(tr);
+  });
+  $('info').textContent=(pr.data||[]).length+' parent account(s). Ready to add a child: '+ready+'. Wording version: '+version+'.';
+}
+
+(async()=>{
+  const s=await sb.auth.getSession();
+  if(!s.data.session){$('denied').hidden=false;return;}
+  const me=await sb.from('profiles').select('role').eq('id',s.data.session.user.id).single();
+  if(me.error||!me.data||me.data.role!=='admin'){$('denied').hidden=false;return;}
+  const v=await sb.rpc('current_consent_version');
+  if(v.error){$('denied').hidden=false;return;}
+  version=v.data;
+  $('area').hidden=false;
+  await render();
+})();
+</script>
+</body>
+</html>

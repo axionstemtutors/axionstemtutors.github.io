@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parent consent | Axion STEM Tutors</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="subjects.html">Subjects</a></li><li><a href="parents.html">For parents</a></li><li><a href="tutors.html">For tutors</a></li><li><a href="about.html">About</a></li><li><a href="leadership.html">Leadership</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>Parent consent</h1><p>Please read each item. Nothing is checked for you.</p></div></div>
+    <section><div class="wrap">
+
+      <div class="form" style="margin-top:0" id="gate" hidden>
+        <h2>Please log in first</h2>
+        <p>You need to be logged in to give consent.</p>
+        <p><a href="login.html">Go to log in</a></p>
+      </div>
+
+      <div class="form" style="margin-top:0" id="notparent" hidden>
+        <h2>This page is for parent accounts</h2>
+        <p>Consent is given by a parent or legal guardian. <a href="account.html">Back to your account</a></p>
+      </div>
+
+      <div id="area" hidden>
+
+        <div class="form" style="margin-top:0">
+          <h2>Where you stand</h2>
+          <p id="sum1"></p>
+          <p id="sum2"></p>
+          <p id="sum3"></p>
+          <p class="note"><a href="account.html">Back to your account</a></p>
+        </div>
+
+        <div class="form">
+          <h2>Step 1. Your consents</h2>
+          <p class="sub">Read about how we handle information in our <a href="privacy.html">privacy policy</a>, <a href="coppa.html">notice to parents</a>, <a href="recording.html">recording policy</a> and <a href="child-safety.html">child safety policy</a>. This page records how Axion works and what you agree to. It does not ask you to give up any legal rights. You can change your choices later by returning to this page.</p>
+          <form id="cf">
+            <div id="items"></div>
+            <label for="signed_name">Type your full name as your electronic signature</label>
+            <input type="text" id="signed_name" maxlength="100" required autocomplete="name">
+            <label class="check"><input type="checkbox" id="adult" required> I am the parent or legal guardian of the child, and I am at least 18 years old.</label>
+            <button type="submit" id="cbtn">Save my consents</button>
+          </form>
+          <div class="msg" id="cout" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="form">
+          <h2>Step 2. A short video call</h2>
+          <p class="sub">To make sure each account belongs to a real parent or guardian, a trained Axion volunteer will meet you for a short video call (about 10 minutes) before your child can be added. You do not need to share anything private on the call. Tell us how to reach you and when you are free.</p>
+          <p id="vstatus"></p>
+          <form id="vf">
+            <label for="phone">Phone number</label>
+            <input type="tel" id="phone" maxlength="30" required autocomplete="tel">
+            <label for="times">Best days and times for a call</label>
+            <textarea id="times" maxlength="300" rows="3"></textarea>
+            <button type="submit" id="vbtn">Request my video call</button>
+          </form>
+          <div class="msg" id="vout" role="status" aria-live="polite"></div>
+        </div>
+
+      </div>
+    </div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>Axion STEM Tutors</strong> is a free tutoring service for grades 2-6.</p>
+      <p>This site does not collect any information from children.</p>
+      <ul class="foot-links"><li><a href="impact.html">Impact</a></li><li><a href="support.html">Support us</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="policies.html">Policies</a></li></ul>
+    </div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const $=(id)=>document.getElementById(id);
+
+// If you change this wording, also change current_consent_version() in Supabase.
+const ITEMS=[
+ {id:'data_collection',req:true,title:'Collecting limited information',
+  text:'Axion may collect my name and email, and my child\u2019s first name or nickname, grade, and subjects. Axion does not collect a child\u2019s last name, school, address, photo, or birthdate.'},
+ {id:'video_audio',req:true,title:'Live video and audio sessions',
+  text:'My child may join 80-minute online sessions with a volunteer tutor over video and audio. Cameras are optional and audio-only is always allowed. Children do not have accounts and cannot message anyone.'},
+ {id:'recording',req:true,title:'Recording of every session',
+  text:'Every session is recorded and stored only on Axion\u2019s secure servers, never on a tutor\u2019s device. Recordings are deleted after 30 days unless a safety or legal matter is open. Trained adults may review recordings. If I do not agree, my child cannot join a session.'},
+ {id:'tutor_volunteers',req:true,title:'Volunteer high school tutors',
+  text:'Tutors are volunteer high school students in grades 9-12, and each tutor\u2019s own parent or guardian has approved them. I may observe any session, and Axion organizers may join any session.'},
+ {id:'service_providers',req:true,title:'Service providers',
+  text:'Axion uses service providers, for example for video and secure data storage. They may handle information only to run Axion\u2019s service.'},
+ {id:'pairing_2on1',req:false,title:'Sometimes two students with one tutor (optional)',
+  text:'Axion may sometimes pair my child with one other student in the same subject and within one grade level. Axion decides the format and tells me ahead of time, aiming for at least 24 hours. If I do not agree, my child stays in one-on-one sessions, which may mean a longer wait.'},
+ {id:'public_first_name',req:false,title:'Sharing my child\u2019s first name or work publicly (optional)',
+  text:'Axion may show my child\u2019s first name or schoolwork, for example on the website or in a newsletter. If I do not agree, Axion will not do this.'}
+];
+const REQUIRED=ITEMS.filter(i=>i.req).map(i=>i.id);
+
+let uid=null,version=null,latest={},ver=null,filled=false;
+
+function buildItems(){
+  const box=$('items');
+  ITEMS.forEach(it=>{
+    const lab=document.createElement('label');lab.className='check';
+    const cb=document.createElement('input');cb.type='checkbox';cb.id='c_'+it.id;
+    const sp=document.createElement('span');
+    const b=document.createElement('strong');b.textContent=it.title+(it.req?' (required)':'')+'. ';
+    sp.appendChild(b);sp.appendChild(document.createTextNode(it.text));
+    lab.appendChild(cb);lab.appendChild(sp);box.appendChild(lab);
+  });
+}
+
+function vText(){
+  if(!ver) return 'Not requested yet.';
+  if(ver.status==='requested') return 'Requested. We will contact you to set up the video call.';
+  if(ver.status==='verified') return 'Done. Thank you.';
+  return 'Needs attention. We will contact you.';
+}
+
+function paint(){
+  const n=REQUIRED.filter(id=>latest[id]===true).length;
+  const verified=ver&&ver.status==='verified';
+  $('sum1').textContent='Required consents: '+n+' of '+REQUIRED.length+(n===REQUIRED.length?' (complete).':'.');
+  $('sum2').textContent='Video call to confirm you are the parent: '+vText();
+  $('sum3').textContent=(n===REQUIRED.length&&verified)
+    ?'You are ready. Adding a child will be available soon.'
+    :'You can add a child once all required consents are given and the video call is done.';
+  $('vstatus').textContent='Status: '+vText();
+  const open=!ver||ver.status==='requested';
+  $('phone').disabled=!open;$('times').disabled=!open;$('vbtn').disabled=!open;
+  $('vbtn').textContent=ver?'Update my details':'Request my video call';
+  if(ver&&!filled){$('phone').value=ver.phone||'';$('times').value=ver.best_times||'';}
+  if(!filled){ITEMS.forEach(it=>{$('c_'+it.id).checked=latest[it.id]===true;});filled=true;}
+}
+
+async function refresh(){
+  const c=await sb.from('consents').select('consent_type,granted,created_at')
+    .eq('parent_id',uid).eq('form_version',version).order('created_at',{ascending:false});
+  latest={};
+  (c.data||[]).forEach(r=>{if(!(r.consent_type in latest)) latest[r.consent_type]=r.granted;});
+  const v=await sb.from('parent_verifications').select('*').eq('parent_id',uid).maybeSingle();
+  ver=v.data||null;
+  paint();
+}
+
+async function load(){
+  const s=await sb.auth.getSession();
+  if(!s.data.session){$('gate').hidden=false;return;}
+  uid=s.data.session.user.id;
+  const pr=await sb.from('profiles').select('role').eq('id',uid).single();
+  if(pr.error||!pr.data||pr.data.role!=='parent'){$('notparent').hidden=false;return;}
+  const v=await sb.rpc('current_consent_version');
+  if(v.error){$('notparent').hidden=false;return;}
+  version=v.data;
+  buildItems();
+  await refresh();
+  $('area').hidden=false;
+}
+
+$('cf').addEventListener('submit',async(e)=>{
+  e.preventDefault();$('cout').textContent='';
+  const name=$('signed_name').value.trim();
+  if(name.length<2){$('cout').textContent='Please type your full name.';return;}
+  const first=Object.keys(latest).length===0;
+  if(first){
+    const missing=ITEMS.filter(i=>i.req&&!$('c_'+i.id).checked);
+    if(missing.length){$('cout').textContent='Axion cannot work without the required items. Please check each required item, or close this page if you do not agree.';return;}
+  }
+  const rows=[];
+  ITEMS.forEach(it=>{
+    const now=$('c_'+it.id).checked;
+    if(latest[it.id]===undefined||latest[it.id]!==now){
+      rows.push({parent_id:uid,consent_type:it.id,granted:now,form_version:version,signed_name:name});
+    }
+  });
+  if(!rows.length){$('cout').textContent='No changes to save.';return;}
+  $('cbtn').disabled=true;
+  const r=await sb.from('consents').insert(rows);
+  $('cbtn').disabled=false;
+  if(r.error){$('cout').textContent='We could not save your consents. Please try again, or contact us if it keeps happening.';return;}
+  await refresh();
+  const lost=REQUIRED.some(id=>latest[id]!==true);
+  $('cout').textContent=lost
+    ?'Saved. Because a required item is not agreed, your child cannot join sessions.'
+    :'Saved. Thank you.';
+});
+
+$('vf').addEventListener('submit',async(e)=>{
+  e.preventDefault();$('vout').textContent='';
+  const phone=$('phone').value.trim(),times=$('times').value.trim();
+  if(phone.length<7){$('vout').textContent='Please enter a phone number.';return;}
+  $('vbtn').disabled=true;
+  let r;
+  if(!ver) r=await sb.from('parent_verifications').insert({parent_id:uid,phone:phone,best_times:times||null});
+  else r=await sb.from('parent_verifications').update({phone:phone,best_times:times||null}).eq('parent_id',uid);
+  if(r.error){$('vbtn').disabled=false;$('vout').textContent='We could not save that. Please try again.';return;}
+  filled=true;
+  await refresh();
+  $('vout').textContent='Saved. We will contact you to schedule the call.';
+});
+
+load();
+</script>
+</body>
+</html>

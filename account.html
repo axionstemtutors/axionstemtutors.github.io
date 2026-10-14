@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My account | Axion STEM Tutors</title>
+  <title>Your account | Axion STEM Tutors</title>
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="styles.css?v=3">
   <link rel="stylesheet" href="forms.css?v=2">
+  <style>
+    dl.acct dt{margin-top:.8rem}
+    dl.acct dd{margin:0 0 0 2.5rem}
+  </style>
 </head>
 <body>
   <a class="skip" href="#main">Skip to main content</a>
@@ -18,16 +22,25 @@
     </div>
   </header>
   <main id="main">
-    <div class="page-head"><div class="wrap"><h1>My account</h1><p>Your details and settings.</p></div></div>
+    <div class="page-head"><div class="wrap"><h1 id="hello">Your account</h1><p>Your details and settings.</p></div></div>
     <section><div class="wrap"><div class="form" style="margin-top:0">
-<h2 id="hello">Loading...</h2>
-<dl id="info"></dl>
-<p class="note" id="status"></p>
-<h3>Change password</h3>
-<form id="pw"><label for="np">New password (at least 10 characters)</label><input type="password" id="np" required minlength="10" autocomplete="new-password">
-<button type="submit">Update password</button></form>
-<div class="msg" id="out" role="status" aria-live="polite"></div>
-<button type="button" class="linkbtn" id="signout">Log out</button></div></div></section>
+      <p id="loading">Loading your account...</p>
+      <div id="area" hidden>
+        <dl class="acct" id="info"></dl>
+        <p id="status" class="note"></p>
+        <p id="links"></p>
+
+        <h3>Change password</h3>
+        <form id="pf">
+          <label for="newpw">New password (at least 10 characters)</label>
+          <input type="password" id="newpw" required minlength="10" autocomplete="new-password">
+          <button type="submit" id="pbtn">Update password</button>
+        </form>
+        <div class="msg" id="pout" role="status" aria-live="polite"></div>
+
+        <p style="margin-top:1.5rem"><button type="button" id="logout">Log out</button></p>
+      </div>
+    </div></div></section>
   </main>
   <footer class="site">
     <div class="wrap">
@@ -40,26 +53,77 @@
 <script src="config.js"></script>
 <script>
 const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
-const out=document.getElementById('out');
-const show=(m)=>{out.textContent=m};
-const add=(k,v)=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;document.getElementById('info').append(dt,dd);};
-async function load(){
- const {data:{session}}=await sb.auth.getSession();
- if(!session){location.href='login.html';return;}
- const {data:p}=await sb.from('profiles').select('role,full_name').eq('id',session.user.id).single();
- document.getElementById('hello').textContent='Hello'+(p&&p.full_name?', '+p.full_name:'');
- add('Email',session.user.email);add('Account type',p?p.role:'unknown');
- if(p&&p.role==='tutor'){const {data:t}=await sb.from('tutor_profiles').select('grade,subjects,status').eq('id',session.user.id).single();
-  if(t){add('Grade',String(t.grade));add('Subjects',(t.subjects||[]).join(', ')||'None chosen');add('Application status',t.status);
-   document.getElementById('status').textContent=t.status==='pending'?'Your application is pending. We will contact your parent or guardian for consent before you can tutor.':'';}}
- if(p&&p.role==='parent')document.getElementById('status').textContent='Next, we will add the consent step so you can add your child and book sessions.';
+const $=(id)=>document.getElementById(id);
+function add(label,value){
+  const dt=document.createElement('dt');dt.textContent=label;
+  const dd=document.createElement('dd');dd.textContent=value;
+  $('info').appendChild(dt);$('info').appendChild(dd);
 }
-load();
-document.getElementById('pw').addEventListener('submit',async(e)=>{e.preventDefault();
- const {error}=await sb.auth.updateUser({password:document.getElementById('np').value});
- show(error?'Could not update the password: '+error.message:'Your password was updated.');});
-document.getElementById('signout').addEventListener('click',async()=>{await sb.auth.signOut();location.href='login.html';});
+function link(href,text){
+  const p=document.createElement('p');const a=document.createElement('a');
+  a.href=href;a.textContent=text;p.appendChild(a);$('links').appendChild(p);
+}
+const ROLE={parent:'parent or guardian',tutor:'tutor',admin:'admin'};
 
+(async()=>{
+  const s=await sb.auth.getSession();
+  if(!s.data.session){location.replace('login.html');return;}
+  const user=s.data.session.user;
+  const pr=await sb.from('profiles').select('role,full_name').eq('id',user.id).single();
+  $('loading').hidden=true;$('area').hidden=false;
+  if(pr.error||!pr.data){$('status').textContent='We could not load your account. Please log out and log in again.';return;}
+  const p=pr.data;
+  $('hello').textContent='Hello, '+(p.full_name||'there');
+  add('Email',user.email);
+  add('Account type',p.role);
+
+  if(p.role==='tutor'){
+    const t=await sb.from('tutor_profiles').select('grade,subjects,status').eq('id',user.id).maybeSingle();
+    if(t.data){
+      add('Grade',String(t.data.grade));
+      add('Subjects',(t.data.subjects||[]).join(', '));
+      add('Application status',t.data.status);
+      if(t.data.status==='pending')$('status').textContent='Your application is pending. We will contact your parent or guardian for consent before you can tutor.';
+    }
+  }
+
+  if(p.role==='parent'){
+    const ok=await sb.rpc('has_required_consents',{p:user.id});
+    const v=await sb.from('parent_verifications').select('status').eq('parent_id',user.id).maybeSingle();
+    const vs=v.data?v.data.status:'none';
+    const consentOk=ok.data===true;
+    add('Required consents',consentOk?'Complete':'Not complete yet');
+    add('Video call to confirm you are the parent',
+      vs==='verified'?'Done':vs==='requested'?'Requested. We will contact you.':vs==='rejected'?'Needs attention. We will contact you.':'Not requested yet');
+    if(consentOk&&vs==='verified'){
+      $('status').textContent='You are ready. Adding a child will be available soon.';
+    }else{
+      $('status').textContent='Next step: give your consents and request your video call. You can add a child after both are done.';
+    }
+    link('consent.html',consentOk&&vs!=='none'?'Review or change your consents':'Give consent and request your video call');
+  }
+
+  if(p.role==='admin'){
+    link('admin.html','Admin: parents, consents and video calls');
+  }
+})();
+
+$('pf').addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const pw=$('newpw').value;
+  if(pw.length<10){$('pout').textContent='Use a password of at least 10 characters.';return;}
+  $('pbtn').disabled=true;
+  const r=await sb.auth.updateUser({password:pw});
+  $('pbtn').disabled=false;
+  if(r.error){$('pout').textContent='We could not change your password: '+r.error.message;return;}
+  $('newpw').value='';
+  $('pout').textContent='Your password has been changed.';
+});
+
+$('logout').addEventListener('click',async()=>{
+  await sb.auth.signOut();
+  location.replace('login.html');
+});
 </script>
 </body>
 </html>
