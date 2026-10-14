@@ -43,13 +43,54 @@
         </div>
 
         <div class="form">
-          <h2>Step 1. Your consents</h2>
-          <p class="sub">Read about how we handle information in our <a href="privacy.html">privacy policy</a>, <a href="coppa.html">notice to parents</a>, <a href="recording.html">recording policy</a> and <a href="child-safety.html">child safety policy</a>. This page records how Axion works and what you agree to. It does not ask you to give up any legal rights. You can change your choices later by returning to this page.</p>
+          <h2>Before you agree: how Axion works</h2>
+          <h3>1. About Axion STEM Tutors</h3>
+          <p>Axion STEM Tutors is a free tutoring service run by volunteers. We offer one-on-one online sessions in math, science, and computer science for students in grades 2-6. Our tutors are high school students in grades 9-12 who are trained, approved by their own parents, and supervised by our adult leadership. Each session lasts 80 minutes.</p>
+          <h3>2. Information we collect about your child</h3>
+          <p>With your consent, we collect only what we need to run sessions:</p>
+          <ul>
+            <li>Your child\u2019s first name or a nickname you choose, and grade level</li>
+            <li>Subjects your child wants help with</li>
+            <li>Participation in sessions, including your child\u2019s voice, and video if the camera is on, plus anything shared on screen or in chat</li>
+            <li>Recordings of sessions (see 3.3 below)</li>
+            <li>Attendance and session length, used for volunteer hour records and totals</li>
+          </ul>
+          <p>We do not collect last names, home addresses, school names, photos, or birthdates for children.</p>
+          <h3>4. What we promise</h3>
+          <ul>
+            <li>We do not sell your child\u2019s information or use it for advertising.</li>
+            <li>We do not use advertising or third-party tracking tools where children use our service.</li>
+            <li>We collect as little information as possible, and we delete it on a schedule we publish.</li>
+            <li>Tutors and students never message each other privately or contact each other outside our platform.</li>
+            <li>Parents may sit in on any session, and our adult leaders may join any session.</li>
+            <li>Anyone can report a concern at any time, and we respond promptly.</li>
+          </ul>
+          <h3>5. Your responsibilities</h3>
+          <ul>
+            <li>Keep session links private, and do not share them.</li>
+            <li>Do not record sessions on your own devices, or share session content.</li>
+            <li>Make sure a parent or guardian is nearby during sessions, and available if needed.</li>
+            <li>Be respectful to our volunteer tutors, and follow our policies and tutor code of conduct.</li>
+            <li>Tell us right away if you have a concern, or if your contact information changes.</li>
+          </ul>
+          <h3>6. Your rights</h3>
+          <p>You may, at any time, review the information we have about your child, ask us to correct or delete it, refuse further collection of your child\u2019s information, or withdraw any consent here. You can change your consents on this page, or use the <a href="contact.html">contact form</a> and choose Privacy request. If you withdraw a required consent, your child will no longer be able to join sessions.</p>
+          <h3>7. Understanding the program</h3>
+          <ul>
+            <li>Tutoring supports school learning but does not replace it, and we cannot promise any particular result.</li>
+            <li>Sessions may be limited, rescheduled, or canceled because the service is free and run by volunteers.</li>
+            <li>We may pause or end participation for anyone who breaks our rules.</li>
+          </ul>
+        </div>
+
+        <div class="form">
+          <h2>Step 1. Your consents (section 3)</h2>
+          <p class="sub">Items marked required are needed for your child to take part. Read more in our <a href="privacy.html">privacy policy</a>, <a href="coppa.html">notice to parents</a>, <a href="recording.html">recording policy</a> and <a href="child-safety.html">child safety policy</a>. This page records how Axion works and what you agree to. It does not ask you to give up any legal rights. You can change your choices later by returning to this page.</p>
           <form id="cf">
             <div id="items"></div>
             <label for="signed_name">Type your full name as your electronic signature</label>
             <input type="text" id="signed_name" maxlength="100" required autocomplete="name">
-            <label class="check"><input type="checkbox" id="adult" required> I am the parent or legal guardian of the child, and I am at least 18 years old.</label>
+            <label class="check"><input type="checkbox" id="adult" required> By signing, I confirm that I am the parent or legal guardian of my child, that I am at least 18 years old, and that I have read and agree to the consents I checked above.</label>
             <button type="submit" id="cbtn">Save my consents</button>
           </form>
           <div class="msg" id="cout" role="status" aria-live="polite"></div>
@@ -87,20 +128,20 @@ const $=(id)=>document.getElementById(id);
 
 // If you change this wording, also change current_consent_version() in Supabase.
 const ITEMS=[
- {id:'data_collection',req:true,title:'Collecting limited information',
-  text:'Axion may collect my name and email, and my child\u2019s first name or nickname, grade, and subjects. Axion does not collect a child\u2019s last name, school, address, photo, or birthdate.'},
- {id:'video_audio',req:true,title:'Live video and audio sessions',
-  text:'My child may join 80-minute online sessions with a volunteer tutor over video and audio. Cameras are optional and audio-only is always allowed. Children do not have accounts and cannot message anyone.'},
- {id:'recording',req:true,title:'Recording of every session',
-  text:'Every session is recorded and stored only on Axion\u2019s secure servers, never on a tutor\u2019s device. Recordings are deleted after 30 days unless a safety or legal matter is open. Trained adults may review recordings. If I do not agree, my child cannot join a session.'},
- {id:'tutor_volunteers',req:true,title:'Volunteer high school tutors',
-  text:'Tutors are volunteer high school students in grades 9-12, and each tutor\u2019s own parent or guardian has approved them. I may observe any session, and Axion organizers may join any session.'},
- {id:'service_providers',req:true,title:'Service providers',
-  text:'Axion uses service providers, for example for video and secure data storage. They may handle information only to run Axion\u2019s service.'},
- {id:'pairing_2on1',req:false,title:'Sometimes two students with one tutor (optional)',
-  text:'Axion may sometimes pair my child with one other student in the same subject and within one grade level. Axion decides the format and tells me ahead of time, aiming for at least 24 hours. If I do not agree, my child stays in one-on-one sessions, which may mean a longer wait.'},
- {id:'public_first_name',req:false,title:'Sharing my child\u2019s first name or work publicly (optional)',
-  text:'Axion may show my child\u2019s first name or schoolwork, for example on the website or in a newsletter. If I do not agree, Axion will not do this.'}
+ {id:'data_collection',req:true,title:'3.1 Data collection and use',
+  text:'I agree that Axion STEM Tutors may collect and use the information in Section 2 to schedule and run tutoring sessions, keep sessions safe, and keep volunteer hour records.'},
+ {id:'video_audio',req:true,title:'3.2 Video and audio participation',
+  text:'Sessions take place over live video and audio. My child\u2019s camera is optional, and audio-only is always allowed.'},
+ {id:'recording',req:true,title:'3.3 Session recording',
+  text:'Every session is recorded for safety and quality. Recordings are stored securely, viewed only by authorized adult team members and reviewers, and deleted after 30 days, unless a safety or legal matter requires keeping one longer. Recordings are never posted publicly or used for marketing. If I do not consent to recording, Axion cannot offer sessions to my child.'},
+ {id:'tutor_volunteers',req:true,title:'3.4 Instruction by a high school volunteer tutor',
+  text:'I understand that my child\u2019s tutor is a high school student in grades 9-12 who volunteers their time, and not a certified teacher.'},
+ {id:'service_providers',req:true,title:'3.6 Service providers',
+  text:'I understand that Axion uses service providers to run sessions (such as its video platform, hosting, and email), and that they may handle my child\u2019s information only to help Axion provide the service. Axion will not share my child\u2019s information with anyone else without separate permission from me.'},
+ {id:'pairing_2on1',req:false,title:'3.5 Possible two-student sessions',
+  text:'Yes, my child may share a session with one other student. Sessions are one-on-one by default. Occasionally, two students in a similar grade share a tutor, and Axion will tell me before the session. Each student sees only the other\u2019s first name or nickname. If I leave this unchecked, my child gets one-on-one sessions only, which may mean a longer wait.'},
+ {id:'public_first_name',req:false,title:'3.7 Public use of my child\u2019s first name or work',
+  text:'Yes, Axion may share my child\u2019s first name or work in newsletters or on social media, but only with my written approval each time. If I leave this unchecked, Axion will not do this.'}
 ];
 const REQUIRED=ITEMS.filter(i=>i.req).map(i=>i.id);
 
