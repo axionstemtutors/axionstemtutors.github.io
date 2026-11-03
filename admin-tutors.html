@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin: tutors | Axion STEM Tutors</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+  <style>
+    .card{border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:1rem;margin:1rem 0}
+    .card p{margin:.3rem 0}
+    .card button{margin:.4rem .4rem 0 0;padding:.4rem .8rem;font-size:.9rem}
+    .card textarea,.card input[type=text]{width:100%;box-sizing:border-box}
+    .card textarea{min-height:11rem}
+    .pill{display:inline-block;padding:.1rem .6rem;border-radius:999px;border:1px solid rgba(255,255,255,.4);font-size:.85rem;margin-left:.4rem}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="admin.html">Parents</a></li><li><a href="account.html">Account</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>Admin: tutors</h1><p>Guardian consent and approval. Waiting tutors are listed first.</p></div></div>
+    <section><div class="wrap">
+      <div class="form" style="margin-top:0" id="denied" hidden>
+        <h2>Admins only</h2>
+        <p>This page is only for Axion admins. <a href="login.html">Log in</a> or <a href="account.html">go to your account</a>.</p>
+      </div>
+      <div id="area" hidden>
+        <p id="info"></p>
+        <p class="note">How it works: (1) create a guardian link and email it to the guardian from axionstemtutors@gmail.com, (2) the guardian opens the link and gives consent, (3) you speak with the guardian by phone or video, (4) tick the box and approve. The link is shown only once. If you lose it, create a new one.</p>
+        <div class="msg" id="out" role="status" aria-live="polite"></div>
+        <div id="cards"></div>
+      </div>
+    </div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap"><p><strong>Axion STEM Tutors</strong> admin area.</p></div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const $=(id)=>document.getElementById(id);
+let version=null;
+const links={}; // tutor id -> link, kept only while this page stays open
+
+function fd(t){return t?new Date(t).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'';}
+function line(parent,text){const p=document.createElement('p');p.textContent=text;parent.appendChild(p);return p;}
+
+function emailText(name,gname,url){
+  return 'Subject: Axion STEM Tutors: please approve '+name+' as a volunteer tutor\n\n'
+   +'Hello '+(gname||'')+',\n\n'
+   +name+' signed up to volunteer as a tutor with Axion STEM Tutors, a free tutoring program for students in grades 2-6. Because tutors are under 18, we need your permission before they can tutor.\n\n'
+   +'Please read and respond here. The link works once and expires in 14 days:\n'+url+'\n\n'
+   +'After that, a member of our team will contact you for a short video call. If you did not expect this email, you can ignore it.\n\n'
+   +'Thank you,\nAxion STEM Tutors';
+}
+
+async function copyText(text,btn){
+  try{await navigator.clipboard.writeText(text);const o=btn.textContent;btn.textContent='Copied';setTimeout(()=>{btn.textContent=o;},1500);}
+  catch(e){$('out').textContent='Copy did not work. Select the text and copy it by hand.';}
+}
+
+async function makeLink(id){
+  const r=await sb.rpc('admin_create_guardian_invite',{p_tutor:id});
+  if(r.error){$('out').textContent='That did not work: '+r.error.message;return;}
+  links[id]=location.origin+location.pathname.replace(/[^\/]*$/,'')+'guardian.html#'+r.data;
+  $('out').textContent='Link created. It is shown below, once.';
+  await render();
+}
+
+async function setStatus(id,status,confirmed,note){
+  const r=await sb.rpc('admin_set_tutor_status',{p_tutor:id,p_status:status,p_call_confirmed:confirmed,p_note:note});
+  $('out').textContent=r.error?'That did not work: '+r.error.message:'Saved.';
+  await render();
+}
+
+async function render(){
+  const [tp,pr,gc,iv]=await Promise.all([
+    sb.from('tutor_profiles').select('id,grade,subjects,guardian_name,guardian_email,status,approved_at,admin_note,created_at'),
+    sb.from('profiles').select('id,full_name').eq('role','tutor'),
+    sb.from('tutor_guardian_consents').select('tutor_id,signed_name,relationship,guardian_phone,items,form_version,created_at').order('created_at',{ascending:false}),
+    sb.from('tutor_guardian_invites').select('tutor_id,expires_at,used_at,created_at').order('created_at',{ascending:false})
+  ]);
+  if(tp.error||pr.error||gc.error||iv.error){$('out').textContent='Could not load the data.';return;}
+  const names={};(pr.data||[]).forEach(p=>{names[p.id]=p.full_name||'(no name)';});
+  const cons={};(gc.data||[]).forEach(c=>{if(!cons[c.tutor_id])cons[c.tutor_id]=c;});
+  const inv={};(iv.data||[]).forEach(i=>{if(!inv[i.tutor_id])inv[i.tutor_id]=i;});
+  const order={pending:0,approved:1,rejected:2};
+  const list=(tp.data||[]).slice().sort((a,b)=>(order[a.status]-order[b.status])||(new Date(a.created_at||0)-new Date(b.created_at||0)));
+  const cards=$('cards');cards.textContent='';
+  list.forEach(t=>{
+    const name=names[t.id]||'(no name)';
+    const first=name.split(' ')[0];
+    const c=cons[t.id],i=inv[t.id];
+    const hasCurrent=c&&c.form_version===version;
+    const card=document.createElement('div');card.className='card';
+    const h=document.createElement('h3');h.textContent=name+' ('+t.id.slice(0,8)+')';
+    const pill=document.createElement('span');pill.className='pill';pill.textContent=t.status;h.appendChild(pill);card.appendChild(h);
+    line(card,'Grade '+t.grade+' | '+(t.subjects||[]).join(', '));
+    line(card,'Guardian given at sign-up: '+(t.guardian_name||'')+' | '+(t.guardian_email||''));
+    if(c){
+      line(card,'Guardian consent: received '+fd(c.created_at)+', signed by '+c.signed_name+' ('+c.relationship+'), phone '+c.guardian_phone+(hasCurrent?'':' (older form version)'));
+    }else{
+      line(card,'Guardian consent: not received yet');
+    }
+    if(i){
+      line(card,'Latest link: created '+fd(i.created_at)+(i.used_at?', used '+fd(i.used_at):', expires '+fd(i.expires_at)));
+    }
+    if(t.status==='approved')line(card,'Approved '+fd(t.approved_at)+(t.admin_note?' | '+t.admin_note:''));
+    if(t.status==='rejected'&&t.admin_note)line(card,'Note: '+t.admin_note);
+
+    const b1=document.createElement('button');b1.type='button';
+    b1.textContent=i&&!i.used_at?'Replace guardian link':'Create guardian link';
+    b1.addEventListener('click',()=>makeLink(t.id));card.appendChild(b1);
+
+    if(links[t.id]){
+      const box=document.createElement('div');
+      line(box,'Guardian link (shown once, send it to '+(t.guardian_email||'the guardian')+'):');
+      const inp=document.createElement('input');inp.type='text';inp.readOnly=true;inp.value=links[t.id];box.appendChild(inp);
+      const cb=document.createElement('button');cb.type='button';cb.textContent='Copy link';
+      cb.addEventListener('click',()=>copyText(links[t.id],cb));box.appendChild(cb);
+      line(box,'Email you can copy and send:');
+      const ta=document.createElement('textarea');ta.readOnly=true;ta.value=emailText(first,t.guardian_name,links[t.id]);box.appendChild(ta);
+      const cb2=document.createElement('button');cb2.type='button';cb2.textContent='Copy email';
+      cb2.addEventListener('click',()=>copyText(ta.value,cb2));box.appendChild(cb2);
+      card.appendChild(box);
+    }
+
+    if(t.status!=='approved'){
+      const lab=document.createElement('label');lab.className='check';
+      const ck=document.createElement('input');ck.type='checkbox';
+      lab.appendChild(ck);lab.appendChild(document.createTextNode(' I spoke with the guardian by phone or video and confirmed they know about this tutor.'));
+      card.appendChild(lab);
+      const ap=document.createElement('button');ap.type='button';ap.textContent='Approve tutor';
+      ap.addEventListener('click',()=>{
+        if(!ck.checked){$('out').textContent='Tick the box to confirm you spoke with the guardian.';return;}
+        const note=window.prompt('Optional note (for example, "call on Nov 5"). Press Cancel to stop.','');
+        if(note===null)return;
+        setStatus(t.id,'approved',true,note);
+      });
+      card.appendChild(ap);
+    }
+    if(t.status!=='rejected'){
+      const rj=document.createElement('button');rj.type='button';rj.textContent='Reject';
+      rj.addEventListener('click',()=>{
+        const note=window.prompt('Optional note (kept private). Press Cancel to stop.','');
+        if(note===null)return;
+        setStatus(t.id,'rejected',false,note);
+      });
+      card.appendChild(rj);
+    }
+    if(t.status!=='pending'){
+      const rs=document.createElement('button');rs.type='button';rs.textContent='Reset to pending';
+      rs.addEventListener('click',()=>setStatus(t.id,'pending',false,null));card.appendChild(rs);
+    }
+    cards.appendChild(card);
+  });
+  const waiting=list.filter(t=>t.status==='pending').length;
+  $('info').textContent=list.length+' tutor application(s). Waiting: '+waiting+'. Tutor form version: '+version+'.';
+}
+
+(async()=>{
+  const s=await sb.auth.getSession();
+  if(!s.data.session){$('denied').hidden=false;return;}
+  const me=await sb.from('profiles').select('role').eq('id',s.data.session.user.id).single();
+  if(me.error||!me.data||me.data.role!=='admin'){$('denied').hidden=false;return;}
+  const v=await sb.rpc('current_tutor_form_version');
+  if(v.error){$('denied').hidden=false;return;}
+  version=v.data;
+  $('area').hidden=false;
+  await render();
+})();
+</script>
+</body>
+</html>

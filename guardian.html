@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <title>Guardian consent for a volunteer tutor | Axion STEM Tutors</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="about.html">About</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>Parent/guardian consent for a volunteer tutor</h1><p id="lead">Checking your link...</p></div></div>
+    <section><div class="wrap">
+
+      <div class="form" style="margin-top:0" id="bad" hidden>
+        <h2 id="badtitle">This link cannot be used</h2>
+        <p id="badtext"></p>
+        <p>If you think this is a mistake, please use our <a href="contact.html">contact form</a>.</p>
+      </div>
+
+      <div class="form" style="margin-top:0" id="done" hidden>
+        <h2>Thank you</h2>
+        <p>Your consent has been received. A member of the Axion team will contact you for a short video call before your teen is approved to tutor. You do not need to do anything else, and you can close this page.</p>
+      </div>
+
+      <div id="area" hidden>
+        <div class="form" style="margin-top:0">
+          <h2>About the volunteer tutor role</h2>
+          <p><span id="tname">Your teen</span> signed up to volunteer as a tutor with Axion STEM Tutors. Because tutors are under 18, we need your permission before they can tutor. Please read each item, check each box you agree to, and sign at the bottom. You can withdraw your consent at any time.</p>
+          <h3>About Axion STEM Tutors</h3>
+          <p>Axion STEM Tutors is a free tutoring service run by volunteers. We offer online sessions in math, science, and computer science for students in grades 2-6. Tutors are volunteer high school students in grades 9-12. Each session lasts 80 minutes and is usually one-on-one. Sometimes two students in the same subject share a tutor.</p>
+          <h3>Information we collect about your teen</h3>
+          <ul>
+            <li>Name, email address, grade, subjects they can tutor, and when they are available</li>
+            <li>Attendance and session length, used for volunteer hour records and certificates</li>
+            <li>Their voice, and video if their camera is on, during sessions, and recordings of sessions</li>
+          </ul>
+          <h3>What we promise</h3>
+          <ul>
+            <li>We do not sell your teen&rsquo;s information or use it for advertising.</li>
+            <li>Tutors and students never message each other privately or contact each other outside our platform.</li>
+            <li>Tutors use first names or nicknames only, and their camera is optional. Audio-only is always allowed.</li>
+            <li>Parents of students may observe any session, and our adult leaders may join any session.</li>
+            <li>Anyone can report a concern at any time, and we respond promptly.</li>
+          </ul>
+          <h3>Your rights</h3>
+          <p>You may at any time review the information we have about your teen, ask us to correct or delete it, or withdraw your consent. If you withdraw consent, your teen can no longer tutor. Use our <a href="contact.html">contact form</a> and choose Privacy request.</p>
+          <p class="note">See also our <a href="privacy.html">privacy policy</a>, <a href="recording.html">recording policy</a>, <a href="child-safety.html">child safety policy</a>, and <a href="code-of-conduct.html">code of conduct</a>. This form records how Axion works and what you agree to. It does not ask you to give up any legal rights.</p>
+        </div>
+
+        <div class="form">
+          <h2>Your consents</h2>
+          <form id="gf">
+            <div id="items"></div>
+            <label for="signed">Type your full name as your electronic signature</label>
+            <input type="text" id="signed" maxlength="100" required autocomplete="name">
+            <label for="rel">Your relationship to the tutor</label>
+            <select id="rel" required>
+              <option value="">Choose one</option>
+              <option>Mother</option><option>Father</option><option>Legal guardian</option><option>Other</option>
+            </select>
+            <label for="phone">Phone number (so we can arrange a short video call)</label>
+            <input type="tel" id="phone" maxlength="30" required autocomplete="tel">
+            <label class="check"><input type="checkbox" id="adult" required> By signing, I confirm that I am the parent or legal guardian of this teen, that I am at least 18 years old, and that I have read and agree to the consents I checked above.</label>
+            <button type="submit" id="gbtn">Submit my consent</button>
+          </form>
+          <div class="msg" id="gout" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>Axion STEM Tutors</strong> is a free tutoring service for grades 2-6.</p>
+      <ul class="foot-links"><li><a href="privacy.html">Privacy policy</a></li><li><a href="policies.html">Policies</a></li></ul>
+    </div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const $=(id)=>document.getElementById(id);
+const token=decodeURIComponent((location.hash||'').slice(1)).trim();
+
+// If you change this wording, also change current_tutor_form_version() in Supabase.
+const ITEMS=[
+ {id:'tutor_role',req:true,title:'Volunteer tutor role',
+  text:'I approve my teen serving as a volunteer tutor for students in grades 2-6. I understand that tutors are volunteers and not certified teachers, and that Axion may end a tutor\u2019s participation at any time.'},
+ {id:'recording',req:true,title:'Session recording',
+  text:'Every session is recorded for safety and quality, and my teen\u2019s voice, and video if their camera is on, will be in the recordings. Recordings are stored only on Axion\u2019s secure servers, never on a tutor\u2019s device. They are viewed only by authorized adult team members and reviewers, never posted publicly or used for marketing, and deleted after 30 days unless a safety or legal matter requires keeping one longer.'},
+ {id:'conduct',req:true,title:'Rules for tutors',
+  text:'My teen will follow Axion\u2019s code of conduct: no private messaging, no contact with students or families outside the platform, first names or nicknames only, and reporting any concern to an Axion adult.'},
+ {id:'data',req:true,title:'Information and service providers',
+  text:'Axion may collect and use the information described above to schedule sessions, keep sessions safe, and keep volunteer hour records and certificates. Axion uses service providers (such as its video platform, hosting, and email) who may handle my teen\u2019s information only to help Axion provide the service. Axion will not share it with anyone else without separate permission from me.'},
+ {id:'supervision',req:true,title:'Adult oversight',
+  text:'I understand that parents of students may observe any session, that Axion\u2019s adult leaders may join any session, and that trained adults may review recordings.'},
+ {id:'hours_training',req:true,title:'Training and volunteer hours',
+  text:'My teen will complete Axion\u2019s tutor training before tutoring. Their volunteer hours are logged from session join and leave times, confirmed by my teen, and approved by Axion. I understand that a member of the Axion team will contact me for a short video call before my teen is approved.'},
+ {id:'public_first_name',req:false,title:'Public recognition (optional)',
+  text:'Axion may share my teen\u2019s first name in newsletters, on the website, or on social media to thank volunteers. If I leave this unchecked, Axion will not do this.'}
+];
+
+function buildItems(){
+  const box=$('items');
+  ITEMS.forEach(it=>{
+    const lab=document.createElement('label');lab.className='check';
+    const cb=document.createElement('input');cb.type='checkbox';cb.id='c_'+it.id;
+    const sp=document.createElement('span');
+    const b=document.createElement('strong');b.textContent=it.title+(it.req?' (required)':'')+'. ';
+    sp.appendChild(b);sp.appendChild(document.createTextNode(it.text));
+    lab.appendChild(cb);lab.appendChild(sp);box.appendChild(lab);
+  });
+}
+
+function bad(title,text){
+  $('lead').textContent='';
+  $('badtitle').textContent=title;$('badtext').textContent=text;$('bad').hidden=false;
+}
+
+(async()=>{
+  if(!token){bad('This link cannot be used','The link looks incomplete. Please use the full link from your email.');return;}
+  const r=await sb.rpc('guardian_invite_info',{p_token:token});
+  if(r.error||!r.data){bad('This link cannot be used','We could not check this link. Please try again later.');return;}
+  const st=r.data.status;
+  if(st==='used'){bad('This link has already been used','Your consent was already received. Thank you.');return;}
+  if(st==='expired'){bad('This link has expired','Links work for 14 days. Please ask the Axion team for a new one.');return;}
+  if(st!=='ok'){bad('This link cannot be used','Please check that you copied the whole link, or ask the Axion team for a new one.');return;}
+  $('tname').textContent=r.data.tutor_first_name;
+  $('lead').textContent='Please read and respond for '+r.data.tutor_first_name+'.';
+  buildItems();
+  $('area').hidden=false;
+})();
+
+$('gf').addEventListener('submit',async(e)=>{
+  e.preventDefault();$('gout').textContent='';
+  const missing=ITEMS.filter(i=>i.req&&!$('c_'+i.id).checked);
+  if(missing.length){$('gout').textContent='Please check each item marked required, or close this page if you do not agree.';return;}
+  const items=ITEMS.filter(i=>$('c_'+i.id).checked).map(i=>i.id);
+  $('gbtn').disabled=true;
+  const r=await sb.rpc('guardian_submit_consent',{
+    p_token:token,
+    p_signed_name:$('signed').value.trim(),
+    p_relationship:$('rel').value,
+    p_phone:$('phone').value.trim(),
+    p_items:items
+  });
+  $('gbtn').disabled=false;
+  if(r.error||!r.data||r.data.ok!==true){
+    const err=r.data&&r.data.error;
+    $('gout').textContent=err==='invalid'
+      ?'This link can no longer be used. Please ask the Axion team for a new one.'
+      :'We could not save your consent. Please check your name, relationship and phone number, and try again.';
+    return;
+  }
+  history.replaceState(null,'',location.pathname);
+  $('area').hidden=true;$('lead').textContent='';$('done').hidden=false;
+});
+</script>
+</body>
+</html>

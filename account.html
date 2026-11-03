@@ -83,7 +83,18 @@ const ROLE={parent:'parent or guardian',tutor:'tutor',admin:'admin'};
       add('Grade',String(t.data.grade));
       add('Subjects',(t.data.subjects||[]).join(', '));
       add('Application status',t.data.status);
-      if(t.data.status==='pending')$('status').textContent='Your application is pending. We will contact your parent or guardian for consent before you can tutor.';
+      const g=await sb.from('tutor_guardian_consents').select('id').eq('tutor_id',user.id).limit(1);
+      const gotG=!g.error&&g.data&&g.data.length>0;
+      add('Parent or guardian consent',gotG?'Received':'Not received yet');
+      if(t.data.status==='pending'){
+        $('status').textContent=gotG
+          ?'Your parent or guardian has given consent. We will contact them for a short call, and then review your application.'
+          :'Your application is pending. We will send your parent or guardian a consent form and contact them before you can tutor.';
+      }else if(t.data.status==='approved'){
+        $('status').textContent='You are approved as a tutor. Session sign-up will be available soon.';
+      }else if(t.data.status==='rejected'){
+        $('status').textContent='We are not able to approve your application right now. Please contact us if you have questions.';
+      }
     }
   }
 
@@ -106,6 +117,7 @@ const ROLE={parent:'parent or guardian',tutor:'tutor',admin:'admin'};
 
   if(p.role==='admin'){
     link('admin.html','Admin: parents, consents and video calls');
+    link('admin-tutors.html','Admin: tutors, guardian consent and approval');
   }
 })();
 
