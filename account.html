@@ -96,7 +96,8 @@ const ROLE={parent:'parent or guardian',tutor:'tutor',admin:'admin'};
     add('Video call to confirm you are the parent',
       vs==='verified'?'Done':vs==='requested'?'Requested. We will contact you.':vs==='rejected'?'Needs attention. We will contact you.':'Not requested yet');
     if(consentOk&&vs==='verified'){
-      $('status').textContent='You are ready. Adding a child will be available soon.';
+      $('status').textContent='You are ready. You can add your children now.';
+      link('children.html','Your children: add or change');
     }else{
       $('status').textContent='Next step: give your consents and request your video call. You can add a child after both are done.';
     }

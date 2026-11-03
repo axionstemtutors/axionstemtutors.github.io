@@ -172,7 +172,7 @@ function paint(){
   $('sum1').textContent='Required consents: '+n+' of '+REQUIRED.length+(n===REQUIRED.length?' (complete).':'.');
   $('sum2').textContent='Video call to confirm you are the parent: '+vText();
   $('sum3').textContent=(n===REQUIRED.length&&verified)
-    ?'You are ready. Adding a child will be available soon.'
+    ?'You are ready. You can add your children from your account page.'
     :'You can add a child once all required consents are given and the video call is done.';
   $('vstatus').textContent='Status: '+vText();
   const open=!ver||ver.status==='requested';

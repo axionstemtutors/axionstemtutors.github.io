@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your children | Axion STEM Tutors</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="forms.css?v=2">
+  <style>
+    .kid{border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:.8rem 1rem;margin:.8rem 0}
+    .kid button{margin:.3rem .4rem 0 0;padding:.35rem .7rem;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html"><img src="logo.png" alt="" width="48" height="48"><span>Axion STEM Tutors</span></a>
+      <nav aria-label="Main"><ul><li><a href="subjects.html">Subjects</a></li><li><a href="parents.html">For parents</a></li><li><a href="tutors.html">For tutors</a></li><li><a href="about.html">About</a></li><li><a href="leadership.html">Leadership</a></li><li><a href="faq.html">FAQ</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><h1>Your children</h1><p>Only a first name or nickname, a grade, and subjects.</p></div></div>
+    <section><div class="wrap">
+
+      <div class="form" style="margin-top:0" id="gate" hidden>
+        <h2>Please log in first</h2>
+        <p><a href="login.html">Go to log in</a></p>
+      </div>
+
+      <div class="form" style="margin-top:0" id="notparent" hidden>
+        <h2>This page is for parent accounts</h2>
+        <p><a href="account.html">Back to your account</a></p>
+      </div>
+
+      <div id="area" hidden>
+        <div class="form" style="margin-top:0">
+          <h2>Children on your account</h2>
+          <p id="blocked" class="note" hidden>You can add or change a child after all required consents are given and your video call is done. <a href="consent.html">Go to consents</a></p>
+          <div id="list"></div>
+          <p id="empty" hidden>No children added yet.</p>
+          <p class="note"><a href="account.html">Back to your account</a></p>
+        </div>
+
+        <div class="form" id="formbox">
+          <h2 id="ftitle">Add a child</h2>
+          <p class="sub">Use a first name or a nickname. Please do not enter a last name, school, address, birthdate, or any numbers. Children never get their own accounts.</p>
+          <form id="kf">
+            <label for="nick">First name or nickname</label>
+            <input type="text" id="nick" maxlength="30" required autocomplete="off">
+            <label for="grade">Grade</label>
+            <select id="grade" required>
+              <option value="">Choose a grade</option>
+              <option value="2">Grade 2</option><option value="3">Grade 3</option><option value="4">Grade 4</option><option value="5">Grade 5</option><option value="6">Grade 6</option>
+            </select>
+            <fieldset style="border:0;padding:0;margin:1rem 0 0">
+              <legend>Subjects (choose at least one)</legend>
+              <label class="check"><input type="checkbox" name="subj" value="Math"> Math</label>
+              <label class="check"><input type="checkbox" name="subj" value="Science"> Science</label>
+              <label class="check"><input type="checkbox" name="subj" value="Computer science"> Computer science</label>
+            </fieldset>
+            <button type="submit" id="kbtn">Add child</button>
+            <button type="button" id="kcancel" hidden>Cancel editing</button>
+          </form>
+          <div class="msg" id="kout" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div></section>
+  </main>
+  <footer class="site">
+    <div class="wrap">
+      <p><strong>Axion STEM Tutors</strong> is a free tutoring service for grades 2-6.</p>
+      <p>This site does not collect any information from children.</p>
+      <ul class="foot-links"><li><a href="impact.html">Impact</a></li><li><a href="support.html">Support us</a></li><li><a href="privacy.html">Privacy policy</a></li><li><a href="policies.html">Policies</a></li></ul>
+    </div>
+  </footer>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const sb=supabase.createClient(AXION_CONFIG.url,AXION_CONFIG.key);
+const $=(id)=>document.getElementById(id);
+let uid=null,ready=false,kids=[],editing=null;
+const MAX=5;
+
+function subjBoxes(){return Array.from(document.querySelectorAll('input[name=subj]'));}
+
+function resetForm(){
+  editing=null;$('kf').reset();
+  $('ftitle').textContent='Add a child';$('kbtn').textContent='Add child';$('kcancel').hidden=true;
+}
+
+function render(){
+  const list=$('list');list.textContent='';
+  $('empty').hidden=kids.length>0;
+  kids.forEach(k=>{
+    const d=document.createElement('div');d.className='kid';
+    const t=document.createElement('div');
+    t.textContent=k.nickname+' | Grade '+k.grade+' | '+k.subjects.join(', ');
+    d.appendChild(t);
+    if(ready){
+      const e=document.createElement('button');e.type='button';e.textContent='Edit';
+      e.addEventListener('click',()=>startEdit(k));d.appendChild(e);
+    }
+    const r=document.createElement('button');r.type='button';r.textContent='Remove';
+    r.addEventListener('click',()=>removeKid(k));d.appendChild(r);
+    list.appendChild(d);
+  });
+  $('blocked').hidden=ready;
+  $('formbox').hidden=!ready||(kids.length>=MAX&&!editing);
+}
+
+function startEdit(k){
+  editing=k.id;
+  $('nick').value=k.nickname;$('grade').value=String(k.grade);
+  subjBoxes().forEach(b=>{b.checked=k.subjects.includes(b.value);});
+  $('ftitle').textContent='Edit '+k.nickname;$('kbtn').textContent='Save changes';$('kcancel').hidden=false;
+  $('formbox').hidden=false;$('kout').textContent='';
+  $('nick').focus();
+}
+
+async function removeKid(k){
+  if(!window.confirm('Remove '+k.nickname+'\u2019s profile? This deletes it and cannot be undone.'))return;
+  const r=await sb.from('children').delete().eq('id',k.id);
+  $('kout').textContent=r.error?'We could not remove that. Please try again.':'Removed.';
+  if(editing===k.id)resetForm();
+  await loadKids();
+}
+
+async function loadKids(){
+  const r=await sb.from('children').select('id,nickname,grade,subjects').eq('parent_id',uid).order('created_at');
+  kids=r.data||[];render();
+}
+
+$('kcancel').addEventListener('click',()=>{resetForm();$('kout').textContent='';render();});
+
+$('kf').addEventListener('submit',async(e)=>{
+  e.preventDefault();$('kout').textContent='';
+  const nick=$('nick').value.trim();
+  const grade=parseInt($('grade').value,10);
+  const subjects=subjBoxes().filter(b=>b.checked).map(b=>b.value);
+  if(!nick){$('kout').textContent='Please enter a first name or nickname.';return;}
+  if(/[0-9@]/.test(nick)){$('kout').textContent='Please use letters only, with no numbers or email addresses.';return;}
+  if(!grade){$('kout').textContent='Please choose a grade.';return;}
+  if(!subjects.length){$('kout').textContent='Please choose at least one subject.';return;}
+  $('kbtn').disabled=true;
+  let r;
+  if(editing) r=await sb.from('children').update({nickname:nick,grade:grade,subjects:subjects}).eq('id',editing);
+  else r=await sb.from('children').insert({parent_id:uid,nickname:nick,grade:grade,subjects:subjects});
+  $('kbtn').disabled=false;
+  if(r.error){
+    $('kout').textContent='We could not save that. Check that required consents and your video call are complete, and that you have no more than '+MAX+' children.';
+    return;
+  }
+  const was=editing;
+  resetForm();
+  $('kout').textContent=was?'Changes saved.':'Child added.';
+  await loadKids();
+});
+
+(async()=>{
+  const s=await sb.auth.getSession();
+  if(!s.data.session){$('gate').hidden=false;return;}
+  uid=s.data.session.user.id;
+  const pr=await sb.from('profiles').select('role').eq('id',uid).single();
+  if(pr.error||!pr.data||pr.data.role!=='parent'){$('notparent').hidden=false;return;}
+  const rd=await sb.rpc('parent_is_ready',{p:uid});
+  ready=rd.data===true;
+  $('area').hidden=false;
+  await loadKids();
+})();
+</script>
+</body>
+</html>
