@@ -24,7 +24,7 @@
     </div>
   </header>
   <main id="main">
-    <div class="page-head"><div class="wrap"><h1>Admin: parents</h1><p>Consents and video-call checks.</p></div></div>
+    <div class="page-head"><div class="wrap"><h1>Admin: parents</h1><p>Consents and video-call checks. Waiting requests are listed first, oldest first.</p></div></div>
     <section><div class="wrap">
       <div class="form" style="margin-top:0" id="denied" hidden>
         <h2>Admins only</h2>
@@ -35,7 +35,7 @@
         <p class="note">Parent email addresses are in Supabase under Authentication, then Users. Only mark someone verified after you have actually spoken with them on a video call.</p>
         <div class="msg" id="out" role="status" aria-live="polite"></div>
         <div class="tbl"><table>
-          <thead><tr><th>Parent</th><th>Required consents</th><th>Optional</th><th>Phone and best times</th><th>Video call</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Parent</th><th>Required consents</th><th>Optional</th><th>Phone and best times</th><th>Video call and dates</th><th>Actions</th></tr></thead>
           <tbody id="rows"></tbody>
         </table></div>
       </div>
@@ -55,6 +55,7 @@ const REQUIRED=['data_collection','video_audio','recording','tutor_volunteers','
 let version=null;
 
 function cell(tr,text){const td=document.createElement('td');td.textContent=text;tr.appendChild(td);return td;}
+function fd(t){return t?new Date(t).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'';}
 function yn(v){return v===true?'yes':(v===false?'no':'not answered');}
 
 async function setStatus(id,status,askNote){
@@ -77,7 +78,14 @@ async function render(){
   const vmap={};(vr.data||[]).forEach(v=>{vmap[v.parent_id]=v;});
   const body=$('rows');body.textContent='';
   let ready=0;
-  (pr.data||[]).forEach(p=>{
+  const rank=(p)=>{const v=vmap[p.id];return v&&v.status==='requested'?0:(v?1:2);};
+  const list=(pr.data||[]).slice().sort((a,b)=>{
+    const ra=rank(a),rb=rank(b);if(ra!==rb)return ra-rb;
+    const va=vmap[a.id],vb=vmap[b.id];
+    if(va&&vb)return new Date(va.requested_at)-new Date(vb.requested_at);
+    return (a.full_name||'').localeCompare(b.full_name||'');
+  });
+  list.forEach(p=>{
     const m=latest[p.id]||{};
     const n=REQUIRED.filter(k=>m[k]===true).length;
     const v=vmap[p.id];
@@ -87,7 +95,10 @@ async function render(){
     cell(tr,n+' of '+REQUIRED.length);
     cell(tr,'2-on-1: '+yn(m.pairing_2on1)+'; public first name: '+yn(m.public_first_name));
     cell(tr,v?(v.phone+(v.best_times?' | '+v.best_times:'')):'none yet');
-    cell(tr,v?(v.status+(v.admin_note?' | '+v.admin_note:'')):'not requested');
+    cell(tr,v?(v.status+(v.status==='requested'?' (asked '+fd(v.requested_at)+')':'')
+      +(v.status==='verified'?' (asked '+fd(v.requested_at)+', verified '+fd(v.verified_at)+')':'')
+      +(v.status==='rejected'?' (asked '+fd(v.requested_at)+')':'')
+      +(v.admin_note?' | '+v.admin_note:'')):'not requested');
     const td=document.createElement('td');
     if(v){
       [['Mark verified','verified',true],['Needs attention','rejected',true],['Reset','requested',false]].forEach(a=>{
